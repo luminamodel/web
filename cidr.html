@@ -47,11 +47,11 @@
             font-size: 1.2em;  
             color: #333;  
         }  
-    </style>  
+    </style>
 </head>  
 <body>  
     <h1>Subnet Calculator</h1>
-    <div class="container">
+    <div class="container">  
         <p>This Subnet Calculator is a handy tool for finding the IP range for any given IP address and subnet mask. It's useful for network engineers and system administrators for network design, planning, and IP address management. Simply enter an IP address and select the mask bits to get the IP range. The calculator also shows the total number of IP addresses within the range.</p> 
         <label for="ip">Enter IP:</label>  
         <input type="text" id="ip" name="ip" placeholder="e.g., 192.168.1.0">  
@@ -61,8 +61,8 @@
         </select>  
         <button onclick="calculate()">Calculate</button>  
         <div id="result"></div>  
-    </div>  
-  
+    </div>
+
     <script>  
         // Helper function to format number with commas as thousands separators  
         function numberWithCommas(x) {  
@@ -104,24 +104,26 @@
   
             var ipBlocks = ip.split('.');  
   
-            // Calculate the first and last IP of the range  
-            var firstIP = ipBlocks.join('.');  
-            var hostBits = 32 - mask;  
-            if (hostBits <= 8) {  
-                ipBlocks[3] = (parseInt(ipBlocks[3]) + totalIPs - 1).toString();  
-            } else if (hostBits <= 16) {  
-                ipBlocks[2] = (parseInt(ipBlocks[2]) + Math.pow(2, hostBits - 8) - 1).toString();  
+            // Calculate the first and last IP of the range    
+            var firstIP = ipBlocks.join('.');    
+            var hostBits = 32 - mask;    
+            var netIncrement = Math.pow(2, hostBits > 8 ? hostBits - 8 : 0);  
+            if (hostBits <= 8) {    
+                ipBlocks[3] = (parseInt(ipBlocks[3]) + Math.pow(2, hostBits) - 1).toString();    
+            } else if (hostBits <= 16) {    
+                ipBlocks[2] = (parseInt(ipBlocks[2]) & (255 - (netIncrement - 1))).toString();  
+                ipBlocks[2] = (parseInt(ipBlocks[2]) + netIncrement - 1).toString();  
                 ipBlocks[3] = "255";  
-            } else {  
-                ipBlocks[1] = (parseInt(ipBlocks[1]) + Math.pow(2, hostBits - 16) - 1).toString();  
-                ipBlocks[2] = "255";  
-                ipBlocks[3] = "255";  
-            }  
-            var lastIP = ipBlocks.join('.');  
+            } else {    
+                ipBlocks[1] = (parseInt(ipBlocks[1]) + Math.pow(2, hostBits - 16) - 1).toString();    
+                ipBlocks[2] = "255";    
+                ipBlocks[3] = "255";    
+            }    
+            var lastIP = ipBlocks.join('.'); 
               
             var resultDiv = document.getElementById("result");  
-            resultDiv.innerHTML = "CIDR Range in IP: " + firstIP + " - " + lastIP;  
+            resultDiv.innerHTML = "CIDR IP Range: " + firstIP + " - " + lastIP;
         }  
-    </script>  
+    </script>
 </body>  
 </html>  
