@@ -1,2 +1,0 @@
-# subnet-calculator
-Subnet calculator
