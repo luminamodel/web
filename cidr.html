@@ -22,7 +22,7 @@
         h1 {  
             text-align: center;  
             color: #333;  
-        }          
+        }  
         label {  
             font-weight: bold;  
             display: block;  
@@ -46,23 +46,31 @@
         #result {  
             font-size: 1.2em;  
             color: #333;  
-        }  
-    </style>
+        }
+    </style>  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jasmine-core/lib/jasmine-core/jasmine.css">  
 </head>  
 <body>  
-    <h1>Subnet Calculator</h1>
+    <h1>Subnet Calculator</h1>  
     <div class="container">  
-        <p>This Subnet Calculator is a handy tool for finding the IP range for any given IP address and subnet mask. It's useful for network engineers and system administrators for network design, planning, and IP address management. Simply enter an IP address and select the mask bits to get the IP range. The calculator also shows the total number of IP addresses within the range.</p> 
+        <p>This Subnet Calculator is a handy tool for finding the IP range for any given IP address and subnet mask. It's useful for network engineers and system administrators for network design, planning, and IP address management. Simply enter an IP address and select the mask bits to get the IP range. The calculator also shows the total number of IP addresses within the range.</p>  
         <label for="ip">Enter IP:</label>  
-        <input type="text" id="ip" name="ip" placeholder="e.g., 192.168.1.0">  
+        <input type="text" id="ip" name="ip" placeholder="e.g., 192.168.1.0"/>
         <label for="mask">Select mask bits:</label>  
         <select id="mask" name="mask">  
-            <option value="">Select...</option>  
+            <option value="">Select...</option>
         </select>  
         <button onclick="calculate()">Calculate</button>  
-        <div id="result"></div>  
-    </div>
+        <div id="result"></div>
+    </div>  
 
+    <!-- Uncomment to enable Jasmine tests
+    <script src="https://cdn.jsdelivr.net/npm/jasmine-core/lib/jasmine-core/jasmine.js"></script>  
+    <script src="https://cdn.jsdelivr.net/npm/jasmine-core/lib/jasmine-core/jasmine-html.js"></script>  
+    <script src="https://cdn.jsdelivr.net/npm/jasmine-core/lib/jasmine-core/boot0.js"></script>  
+    <script src="https://cdn.jsdelivr.net/npm/jasmine-core/lib/jasmine-core/boot1.js"></script>  
+    -->
+    
     <script>  
         // Helper function to format number with commas as thousands separators  
         function numberWithCommas(x) {  
@@ -85,9 +93,9 @@
   
         function isValidIP(ip) {  
             var blocks = ip.split(".");  
-            if(blocks.length === 4) {  
+            if (blocks.length === 4) {  
                 return blocks.every(function(block) {  
-                    return parseInt(block) >=0 && parseInt(block) <= 255;  
+                    return parseInt(block) >= 0 && parseInt(block) <= 255;  
                 });  
             }  
             return false;  
@@ -104,26 +112,74 @@
   
             var ipBlocks = ip.split('.');  
   
-            // Calculate the first and last IP of the range    
-            var firstIP = ipBlocks.join('.');    
-            var hostBits = 32 - mask;    
+            // Calculate the first and last IP of the range  
+            var firstIP = ipBlocks.join('.');  
+            var hostBits = 32 - mask;  
             var netIncrement = Math.pow(2, hostBits > 8 ? hostBits - 8 : 0);  
-            if (hostBits <= 8) {    
-                ipBlocks[3] = (parseInt(ipBlocks[3]) + Math.pow(2, hostBits) - 1).toString();    
-            } else if (hostBits <= 16) {    
+            if (hostBits <= 8) {  
+                ipBlocks[3] = (parseInt(ipBlocks[3]) + Math.pow(2, hostBits) - 1).toString();  
+            } else if (hostBits <= 16) {  
                 ipBlocks[2] = (parseInt(ipBlocks[2]) & (255 - (netIncrement - 1))).toString();  
                 ipBlocks[2] = (parseInt(ipBlocks[2]) + netIncrement - 1).toString();  
                 ipBlocks[3] = "255";  
-            } else {    
-                ipBlocks[1] = (parseInt(ipBlocks[1]) + Math.pow(2, hostBits - 16) - 1).toString();    
-                ipBlocks[2] = "255";    
-                ipBlocks[3] = "255";    
-            }    
-            var lastIP = ipBlocks.join('.'); 
-              
+            } else {  
+                ipBlocks[1] = (parseInt(ipBlocks[1]) + Math.pow(2, hostBits - 16) - 1).toString();  
+                ipBlocks[2] = "255";  
+                ipBlocks[3] = "255";  
+            }  
+            var lastIP = ipBlocks.join('.');  
+  
             var resultDiv = document.getElementById("result");  
-            resultDiv.innerHTML = "CIDR IP Range: " + firstIP + " - " + lastIP;
+            resultDiv.innerHTML = "CIDR IP Range: " + firstIP + " - " + lastIP;  
         }  
+    </script>  
+  
+    <!-- Jasmine tests -->
+    <script>
+        it("should format number with commas correctly", function() {  
+            expect(numberWithCommas(1000)).toBe("1,000");  
+            expect(numberWithCommas(1000000)).toBe("1,000,000");  
+        });
+
+        it("should calculate the correct number of IPs for a given mask", function() {  
+                expect(calculateIPs(32)).toBe(1);  
+                expect(calculateIPs(24)).toBe(256);  
+                expect(calculateIPs(16)).toBe(65536);  
+                expect(calculateIPs(8)).toBe(16777216);  
+        });
+
+        it("should validate IP addresses correctly", function() {  
+                expect(isValidIP("192.168.1.1")).toBe(true);  
+                expect(isValidIP("255.255.255.255")).toBe(true);  
+                expect(isValidIP("0.0.0.0")).toBe(true);  
+                expect(isValidIP("999.999.999.999")).toBe(false);  
+                expect(isValidIP("abc.def.ghi.jkl")).toBe(false);  
+                expect(isValidIP("192.168.1")).toBe(false);  
+            });  
+  
+        it("should calculate the correct IP range for a given IP and mask", function() {  
+            document.getElementById("ip").value = "192.168.1.0";  
+            document.getElementById("mask").value = "24";  
+            calculate();  
+            expect(document.getElementById("result").innerHTML).toBe("CIDR IP Range: 192.168.1.0 - 192.168.1.255");  
+
+            document.getElementById("ip").value = "10.0.0.0";  
+            document.getElementById("mask").value = "8";  
+            calculate();  
+            expect(document.getElementById("result").innerHTML).toBe("CIDR IP Range: 10.0.0.0 - 10.255.255.255");  
+
+            document.getElementById("ip").value = "172.16.0.0";  
+            document.getElementById("mask").value = "16";  
+            calculate();  
+            expect(document.getElementById("result").innerHTML).toBe("CIDR IP Range: 172.16.0.0 - 172.16.255.255");  
+        });  
+
+        it("should show an alert for invalid IP addresses", function() {  
+            spyOn(window, 'alert');  
+            document.getElementById("ip").value = "999.999.999.999";  
+            calculate();  
+            expect(window.alert).toHaveBeenCalledWith("Invalid IP.");  
+        });
     </script>
 </body>  
 </html>  
